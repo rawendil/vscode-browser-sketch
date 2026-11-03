@@ -8,6 +8,10 @@
     "name": "Sebastian Soczka"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rawendil/vscode-browser-sketch.git"
+  },
   "icon": "images/icon.png",
   "galleryBanner": {
     "color": "#1B4332",

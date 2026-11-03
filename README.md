@@ -2,12 +2,16 @@
 
 Screenshot the **VS Code Integrated Browser** with one shortcut, draw on it and copy it to the clipboard. Show an AI agent or a teammate what to fix on a page, without leaving the editor.
 
+![Sketch tab with annotations on a screenshot of a page](images/sketch.png)
+
 ## Usage
 
 1. Open a page in the VS Code Integrated Browser.
 2. Press **`Ctrl+Alt+S`** (or click the camera icon in the status bar, or run "Browser Sketch: Screenshot Browser" from the Command Palette).
 3. The screenshot opens in a new "Sketch" tab — mark what needs fixing.
 4. **`Ctrl+C`** copies the image with your drawing to the clipboard. Paste it into a chat, an issue or a messenger.
+
+![Browser Sketch command in the Command Palette over the Integrated Browser](images/command.png)
 
 The screenshot shows what is visible in the tab, in its current state. The page is not reloaded, so logins, open dialogs and scroll position stay as they are. WebGL and canvas content is captured.
 
