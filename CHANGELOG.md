@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- The status bar camera icon now shows right after VS Code starts, not only after the first screenshot.
+
 ## 0.1.0
 
 Initial release.

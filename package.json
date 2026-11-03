@@ -2,7 +2,7 @@
   "name": "vscode-browser-sketch",
   "displayName": "Browser Sketch",
   "description": "Screenshot the VS Code Integrated Browser, annotate it and copy it to the clipboard.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "rawendil",
   "author": {
     "name": "Sebastian Soczka"
@@ -21,7 +21,9 @@
     "Visualization"
   ],
   "main": "./dist/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
       {

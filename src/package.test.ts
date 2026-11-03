@@ -7,3 +7,7 @@ test("the macOS shortcut does not override Save All (cmd+alt+s)", () => {
   const binding = pkg.contributes.keybindings.find((k: any) => k.command === "browserSketch.capture");
   expect(binding.mac).not.toBe("cmd+alt+s");
 });
+
+test("activates after startup so the status bar icon shows without a first capture", () => {
+  expect(pkg.activationEvents).toContain("onStartupFinished");
+});
