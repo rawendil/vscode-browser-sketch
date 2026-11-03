@@ -1,74 +1,41 @@
 import { describe, expect, test, vi } from "vitest";
-import { attachToPage, BlankPageError, captureViewport } from "./page";
+import { BlankPageError, captureViewport, inspectPage } from "./page";
 
-type Targets = { targetId: string; type: string; url?: string }[];
-
-function fakeCdp(targets: Targets) {
-  const send = vi.fn(async (method: string, _params?: object, _sessionId?: string): Promise<any> => {
-    switch (method) {
-      case "Target.attachToBrowserTarget":
-        return { sessionId: "B1" };
-      case "Target.getTargets":
-        return { targetInfos: targets };
-      case "Target.attachToTarget":
-        return { sessionId: "S1" };
-    }
+function fakeCdp(targetInfo: { type: string; url?: string }) {
+  const send = vi.fn(async (method: string): Promise<any> => {
+    if (method === "Target.getTargetInfo") return { targetInfo: { targetId: "P1", ...targetInfo } };
     throw new Error(`nieoczekiwane ${method}`);
   });
   return { send: send as any, calls: send.mock.calls };
 }
 
-describe("attachToPage", () => {
-  test("wywołuje attachToBrowserTarget, getTargets, attachToTarget(flatten) w tej kolejności", async () => {
-    const cdp = fakeCdp([{ targetId: "P1", type: "page", url: "http://localhost:5173/" }]);
-    const page = await attachToPage(cdp);
-    expect(cdp.calls.map((c) => c[0])).toEqual([
-      "Target.attachToBrowserTarget",
-      "Target.getTargets",
-      "Target.attachToTarget",
-    ]);
-    expect(cdp.calls[2][1]).toEqual({ targetId: "P1", flatten: true });
-    expect(page).toEqual({ sessionId: "S1", url: "http://localhost:5173/" });
-  });
-
-  test("getTargets i attachToTarget idą przez sesję przeglądarki", async () => {
-    const cdp = fakeCdp([{ targetId: "P1", type: "page", url: "http://x/" }]);
-    await attachToPage(cdp);
-    expect(cdp.calls[0][2]).toBeUndefined();
-    expect(cdp.calls[1][2]).toBe("B1");
-    expect(cdp.calls[2][2]).toBe("B1");
-  });
-
-  test("pomija cele, które nie są stroną", async () => {
-    const cdp = fakeCdp([
-      { targetId: "W1", type: "service_worker", url: "http://x/sw.js" },
-      { targetId: "P1", type: "page", url: "http://x/" },
-    ]);
-    await attachToPage(cdp);
-    expect(cdp.calls[2][1]).toEqual({ targetId: "P1", flatten: true });
+describe("inspectPage", () => {
+  test("pyta o cel pośrednika bez sessionId i zwraca adres strony", async () => {
+    const cdp = fakeCdp({ type: "page", url: "http://localhost:5173/" });
+    expect(await inspectPage(cdp)).toEqual({ url: "http://localhost:5173/" });
+    expect(cdp.calls).toEqual([["Target.getTargetInfo"]]);
   });
 
   test("rzuca BlankPageError dla about:blank", async () => {
-    const cdp = fakeCdp([{ targetId: "P1", type: "page", url: "about:blank" }]);
-    await expect(attachToPage(cdp)).rejects.toBeInstanceOf(BlankPageError);
+    await expect(inspectPage(fakeCdp({ type: "page", url: "about:blank" }))).rejects.toBeInstanceOf(BlankPageError);
   });
 
   test("rzuca BlankPageError dla pustego url", async () => {
-    const cdp = fakeCdp([{ targetId: "P1", type: "page", url: "" }]);
-    await expect(attachToPage(cdp)).rejects.toBeInstanceOf(BlankPageError);
+    await expect(inspectPage(fakeCdp({ type: "page", url: "" }))).rejects.toBeInstanceOf(BlankPageError);
   });
 
-  test("rzuca BlankPageError, gdy nie ma żadnej strony", async () => {
-    const cdp = fakeCdp([{ targetId: "W1", type: "service_worker" }]);
-    await expect(attachToPage(cdp)).rejects.toBeInstanceOf(BlankPageError);
+  test("rzuca BlankPageError, gdy cel nie jest stroną", async () => {
+    await expect(inspectPage(fakeCdp({ type: "service_worker", url: "http://x/sw.js" }))).rejects.toBeInstanceOf(
+      BlankPageError,
+    );
   });
 });
 
 describe("captureViewport", () => {
-  test("wysyła Page.captureScreenshot {format:'png'} z sessionId i dekoduje base64", async () => {
+  test("wysyła Page.captureScreenshot {format:'png'} bez sessionId i dekoduje base64", async () => {
     const send = vi.fn(async () => ({ data: Buffer.from("PNG").toString("base64") }));
-    const png = await captureViewport({ send: send as any }, "S1");
+    const png = await captureViewport({ send: send as any });
     expect(png.toString()).toBe("PNG");
-    expect(send).toHaveBeenCalledWith("Page.captureScreenshot", { format: "png" }, "S1");
+    expect(send).toHaveBeenCalledWith("Page.captureScreenshot", { format: "png" });
   });
 });

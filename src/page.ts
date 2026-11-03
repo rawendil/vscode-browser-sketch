@@ -9,45 +9,25 @@ export class BlankPageError extends Error {
   }
 }
 
-export interface PageSession {
-  sessionId: string;
+export interface PageInfo {
   url: string;
 }
 
-interface TargetInfo {
-  targetId: string;
-  type: string;
-  url?: string;
-}
-
 /**
- * Podpina się pod stronę za pośrednikiem CDP z vscode-js-debug.
- * Od VS Code 1.117 pośrednik wymaga jawnego podpięcia pod cel przeglądarki,
- * a polecenia strony muszą nieść sessionId strony.
+ * Pośrednik CDP sesji potomnej obejmuje jedną kartę i sam kieruje do niej polecenia
+ * bez `sessionId` (jawne `Target.attachToBrowserTarget` odrzuca — VS Code 1.144).
  */
-export async function attachToPage(cdp: Cdp): Promise<PageSession> {
-  const browser = await cdp.send<{ sessionId: string }>("Target.attachToBrowserTarget");
-  const { targetInfos } = await cdp.send<{ targetInfos: TargetInfo[] }>(
-    "Target.getTargets",
-    undefined,
-    browser.sessionId,
-  );
-  // Pośrednik sesji potomnej obejmuje jedną kartę, więc pierwsza strona jest tą właściwą.
-  const page = targetInfos.find((t) => t.type === "page");
-  const url = page?.url ?? "";
-  if (!page || url === "" || url === "about:blank") {
+export async function inspectPage(cdp: Cdp): Promise<PageInfo> {
+  const { targetInfo } = await cdp.send<{ targetInfo: { type: string; url?: string } }>("Target.getTargetInfo");
+  const url = targetInfo.url ?? "";
+  if (targetInfo.type !== "page" || url === "" || url === "about:blank") {
     throw new BlankPageError();
   }
-  const { sessionId } = await cdp.send<{ sessionId: string }>(
-    "Target.attachToTarget",
-    { targetId: page.targetId, flatten: true },
-    browser.sessionId,
-  );
-  return { sessionId, url };
+  return { url };
 }
 
 /** Zrzut widocznego obszaru w pikselach urządzenia (PNG). */
-export async function captureViewport(cdp: Cdp, sessionId: string): Promise<Buffer> {
-  const { data } = await cdp.send<{ data: string }>("Page.captureScreenshot", { format: "png" }, sessionId);
+export async function captureViewport(cdp: Cdp): Promise<Buffer> {
+  const { data } = await cdp.send<{ data: string }>("Page.captureScreenshot", { format: "png" });
   return Buffer.from(data, "base64");
 }

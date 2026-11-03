@@ -8,11 +8,15 @@ export interface AttachedBrowser {
   stop(): Promise<void>;
 }
 
+/** Jak długo po przekroczeniu limitu zatrzymujemy własną sesję, która wystartuje spóźniona. */
+const LATE_SESSION_MS = 5 * 60 * 1000;
+
 /**
  * Uruchamia własną sesję `editor-browser` w trybie attach (podpięcie pod istniejącą kartę)
  * i czeka na jej sesję potomną strony. Cudzych sesji nie dotyka.
+ * VS Code może pokazać wybór karty (także przy jednej), więc limit obejmuje czas wyboru.
  */
-export async function attachToBrowser(timeoutMs = 15000): Promise<AttachedBrowser> {
+export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowser> {
   const marker = randomUUID();
   let root: vscode.DebugSession | undefined;
   const rootListener = vscode.debug.onDidStartDebugSession((s) => {
@@ -31,7 +35,8 @@ export async function attachToBrowser(timeoutMs = 15000): Promise<AttachedBrowse
   childPromise.catch(() => {});
 
   try {
-    const started = await vscode.debug.startDebugging(
+    // Bez `noDebug`: z nim vscode-js-debug nie uruchamia sesji attach wcale (VS Code 1.144).
+    const started = vscode.debug.startDebugging(
       undefined,
       {
         type: "editor-browser",
@@ -41,15 +46,19 @@ export async function attachToBrowser(timeoutMs = 15000): Promise<AttachedBrowse
         [MARKER_KEY]: marker,
       },
       {
-        noDebug: true,
         suppressDebugToolbar: true,
         suppressDebugView: true,
         suppressDebugStatusbar: true,
       },
     );
-    if (!started) throw new Error("Nie udało się podpiąć do przeglądarki");
-
-    const child = await childPromise;
+    // startDebugging potrafi długo nie wracać, choć sesje już działają — rozstrzyga sesja potomna.
+    const child = await Promise.race([
+      childPromise,
+      Promise.resolve(started).then((ok) => {
+        if (!ok) throw new Error("Nie udało się podpiąć do przeglądarki");
+        return childPromise;
+      }),
+    ]);
     root ??= child.parentSession;
     return {
       child,
@@ -59,7 +68,16 @@ export async function attachToBrowser(timeoutMs = 15000): Promise<AttachedBrowse
       },
     };
   } catch (err) {
-    await stopRoot();
+    if (root) {
+      await stopRoot();
+    } else {
+      // Wybór karty mógł zostać otwarty — jeśli ktoś wybierze kartę później, nie zostawiamy sesji.
+      waitFor<vscode.DebugSession>(
+        (cb) => vscode.debug.onDidStartDebugSession(cb),
+        (s) => !s.parentSession && isOwnSession(s, marker),
+        LATE_SESSION_MS,
+      ).then((late) => vscode.debug.stopDebugging(late), () => {});
+    }
     throw err;
   } finally {
     rootListener.dispose();
