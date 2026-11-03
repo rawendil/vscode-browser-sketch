@@ -12,8 +12,8 @@ interface CdpProxy {
 }
 
 /**
- * Zrzut widocznej części otwartej karty wbudowanej przeglądarki do `storageDir`,
- * otwarty w podglądzie obrazu. Zwraca plik albo `undefined`, gdy zrzutu nie ma.
+ * Zrzut widocznej części otwartej karty wbudowanej przeglądarki do `storageDir`.
+ * Zwraca plik albo `undefined`, gdy zrzutu nie ma.
  */
 export async function captureBrowser(
   storageDir: vscode.Uri,
@@ -48,7 +48,6 @@ export async function captureBrowser(
 
     const uri = vscode.Uri.joinPath(storageDir, captureFileName(new Date()));
     await vscode.workspace.fs.writeFile(uri, png);
-    await vscode.commands.executeCommand("vscode.open", uri, { preview: false });
     return uri;
   } catch (err) {
     log.appendLine(`  błąd: ${err instanceof Error ? err.stack : String(err)}`);

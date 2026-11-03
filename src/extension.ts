@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { captureBrowser } from "./capture";
+import { openSketch } from "./sketch/panel";
 import { cleanCaptures } from "./storage";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -16,7 +17,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (busy) return;
       busy = true;
       try {
-        await captureBrowser(capturesDir, log);
+        const image = await captureBrowser(capturesDir, log);
+        if (image) openSketch(context.extensionUri, image, capturesDir);
       } finally {
         busy = false;
       }

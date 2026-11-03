@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { isOwnChild, MARKER_KEY, TimeoutError, waitFor, withTimeout, type SessionLike } from "./session-match";
+import { attachConfig, isOwnChild, MARKER_KEY, TimeoutError, waitFor, withTimeout, type SessionLike } from "./session-match";
 
 function session(id: string, configuration: Record<string, unknown>, parentSession?: SessionLike): SessionLike {
   return { id, type: "editor-browser", configuration, parentSession };
@@ -67,5 +67,18 @@ describe("withTimeout", () => {
     const p = withTimeout(new Promise(() => {}), 1000);
     vi.advanceTimersByTime(1000);
     await expect(p).rejects.toBeInstanceOf(TimeoutError);
+  });
+});
+
+describe("attachConfig", () => {
+  test("attach do editor-browser ze znacznikiem i urlFilter '*' (jedna karta bez okna wyboru)", () => {
+    expect(attachConfig("m1")).toEqual({
+      type: "editor-browser",
+      request: "attach",
+      name: "Browser Sketch",
+      urlFilter: "*",
+      internalConsoleOptions: "neverOpen",
+      [MARKER_KEY]: "m1",
+    });
   });
 });

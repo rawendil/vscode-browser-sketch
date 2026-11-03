@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import * as vscode from "vscode";
-import { AttachCancelledError, isOwnChild, isOwnSession, MARKER_KEY, TimeoutError, waitFor } from "./session-match";
+import { attachConfig, AttachCancelledError, isOwnChild, isOwnSession, TimeoutError, waitFor } from "./session-match";
 
 export interface AttachedBrowser {
   child: vscode.DebugSession;
@@ -38,13 +38,7 @@ export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowse
     // Bez `noDebug`: z nim vscode-js-debug nie uruchamia sesji attach wcale (VS Code 1.144).
     const started = vscode.debug.startDebugging(
       undefined,
-      {
-        type: "editor-browser",
-        request: "attach",
-        name: "Browser Sketch",
-        internalConsoleOptions: "neverOpen",
-        [MARKER_KEY]: marker,
-      },
+      attachConfig(marker),
       {
         suppressDebugToolbar: true,
         suppressDebugView: true,

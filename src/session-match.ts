@@ -8,6 +8,21 @@ export interface SessionLike {
   parentSession?: SessionLike;
 }
 
+/**
+ * Konfiguracja podpięcia pod kartę wbudowanej przeglądarki. js-debug pomija okno wyboru
+ * tylko wtedy, gdy `urlFilter` pasuje do dokładnie jednej karty — `*` pasuje do każdej.
+ */
+export function attachConfig(marker: string) {
+  return {
+    type: "editor-browser",
+    request: "attach",
+    name: "Browser Sketch",
+    urlFilter: "*",
+    internalConsoleOptions: "neverOpen",
+    [MARKER_KEY]: marker,
+  };
+}
+
 export class TimeoutError extends Error {
   constructor(ms: number) {
     super(`Przekroczono limit czasu (${ms} ms)`);

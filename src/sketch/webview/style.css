@@ -1,0 +1,132 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--vscode-editor-background);
+  color: var(--vscode-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--vscode-panel-border, transparent);
+}
+
+.group {
+  display: flex;
+  gap: 2px;
+  padding-right: 8px;
+  margin-right: 4px;
+  border-right: 1px solid var(--vscode-panel-border, transparent);
+}
+
+.group:last-child {
+  border-right: none;
+}
+
+button {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
+button.active {
+  background: var(--vscode-toolbar-activeBackground, var(--vscode-toolbar-hoverBackground));
+  border-color: var(--vscode-focusBorder);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.swatch {
+  min-width: 22px;
+  width: 22px;
+  height: 22px;
+  margin: 3px 1px;
+  padding: 0;
+  border: 2px solid var(--vscode-panel-border, #8888);
+  border-radius: 50%;
+}
+
+.swatch.active {
+  border-color: var(--vscode-focusBorder);
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
+}
+
+.width-dot {
+  display: inline-block;
+  background: currentColor;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+#stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#frame {
+  position: relative;
+  line-height: 0;
+}
+
+#shot {
+  display: block;
+  user-select: none;
+}
+
+#layer {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+#layer.eraser {
+  cursor: cell;
+}
+
+#layer.text {
+  cursor: text;
+}
+
+#text-input {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 1px dashed var(--vscode-focusBorder);
+  background: transparent;
+  font-family: sans-serif;
+  line-height: 1.2;
+  outline: none;
+  min-width: 2ch;
+}
