@@ -1,4 +1,4 @@
-/** Rysunek nad zrzutem: lista obiektów we współrzędnych pikseli obrazu. */
+/** Drawing over a screenshot: a list of objects in image pixel coordinates. */
 
 export type Point = { x: number; y: number };
 
@@ -102,7 +102,7 @@ export function topmostHit(shapes: readonly Shape[], p: Point, tolerance: number
   return undefined;
 }
 
-/** Klik bez przeciągnięcia nie zostawia niewidzialnych obiektów. */
+/** A click without dragging leaves no invisible objects. */
 export function isDegenerate(shape: Shape): boolean {
   switch (shape.kind) {
     case "pen":
@@ -116,7 +116,7 @@ export function isDegenerate(shape: Shape): boolean {
   }
 }
 
-/** Skala obrazu w karcie: całość mieści się w ramce i nigdy powyżej 1:1 w pikselach ekranu. */
+/** Image scale in the tab: the whole image fits the frame and never exceeds 1:1 in screen pixels. */
 export function fitScale(img: { w: number; h: number }, box: { w: number; h: number }, dpr: number): number {
   return Math.min(box.w / img.w, box.h / img.h, 1 / dpr);
 }
@@ -124,8 +124,8 @@ export function fitScale(img: { w: number; h: number }, box: { w: number; h: num
 export type Rect = { x: number; y: number; w: number; h: number };
 
 /**
- * Zaznaczenie z dwóch rogów (w dowolnej kolejności), przycięte do obrazu i rozszerzone
- * do pełnych pikseli. Klik albo obszar poza obrazem to brak zaznaczenia.
+ * Selection from two corners (in any order), clamped to the image and expanded
+ * to whole pixels. A click or an area outside the image means no selection.
  */
 export function normalizeSelection(a: Point, b: Point, img: { w: number; h: number }): Rect | undefined {
   const x0 = Math.max(0, Math.floor(Math.min(a.x, b.x)));

@@ -26,7 +26,7 @@ class FakeSocket implements SocketLike {
 }
 
 describe("CdpClient", () => {
-  test("kolejne żądania mają rosnące id i dostają swoje wyniki", async () => {
+  test("consecutive requests get increasing ids and receive their own results", async () => {
     const socket = new FakeSocket();
     const cdp = new CdpClient(socket);
     const pA = cdp.send("A");
@@ -39,7 +39,7 @@ describe("CdpClient", () => {
     expect(await pB).toEqual({ b: 1 });
   });
 
-  test("sessionId trafia do ramki, gdy podany", () => {
+  test("sessionId goes into the frame when provided", () => {
     const socket = new FakeSocket();
     const cdp = new CdpClient(socket);
     void cdp.send("Page.captureScreenshot", { format: "png" }, "S1");
@@ -53,7 +53,7 @@ describe("CdpClient", () => {
     expect(socket.frame(1)).not.toHaveProperty("sessionId");
   });
 
-  test("odpowiedź z error odrzuca CdpError z message i code", async () => {
+  test("a response with error rejects with CdpError carrying message and code", async () => {
     const socket = new FakeSocket();
     const cdp = new CdpClient(socket);
     const p = cdp.send("A");
@@ -64,7 +64,7 @@ describe("CdpClient", () => {
     expect(err.code).toBe(-32000);
   });
 
-  test("zamknięcie gniazda odrzuca wszystkie oczekujące żądania", async () => {
+  test("closing the socket rejects all pending requests", async () => {
     const socket = new FakeSocket();
     const cdp = new CdpClient(socket);
     const pA = cdp.send("A");
@@ -74,14 +74,14 @@ describe("CdpClient", () => {
     await expect(pB).rejects.toBeInstanceOf(CdpError);
   });
 
-  test("żądanie po zamknięciu jest odrzucane od razu", async () => {
+  test("a request after close is rejected immediately", async () => {
     const socket = new FakeSocket();
     const cdp = new CdpClient(socket);
     cdp.close();
     await expect(cdp.send("A")).rejects.toBeInstanceOf(CdpError);
   });
 
-  test("zdarzenia bez id są ignorowane", async () => {
+  test("events without id are ignored", async () => {
     const socket = new FakeSocket();
     const cdp = new CdpClient(socket);
     const p = cdp.send("A");
@@ -90,10 +90,10 @@ describe("CdpClient", () => {
     expect(await p).toEqual({});
   });
 
-  describe("limit czasu", () => {
+  describe("timeout", () => {
     afterEach(() => vi.useRealTimers());
 
-    test("żądanie bez odpowiedzi jest odrzucane po limicie czasu", async () => {
+    test("a request with no response is rejected after the timeout", async () => {
       vi.useFakeTimers();
       const cdp = new CdpClient(new FakeSocket(), 1000);
       const p = cdp.send("Page.captureScreenshot");

@@ -8,15 +8,15 @@ function session(id: string, configuration: Record<string, unknown>, parentSessi
 describe("isOwnChild", () => {
   const ourRoot = session("R1", { [MARKER_KEY]: "m1" });
 
-  test("true dla potomnej z naszym znacznikiem u rodzica", () => {
+  test("true for a child with our marker on its parent", () => {
     expect(isOwnChild(session("C1", {}, ourRoot), "m1")).toBe(true);
   });
 
-  test("false dla sesji głównej (bez rodzica), nawet z naszym znacznikiem", () => {
+  test("false for a root session (no parent), even with our marker", () => {
     expect(isOwnChild(ourRoot, "m1")).toBe(false);
   });
 
-  test("false dla potomnej cudzej sesji (inny znacznik albo brak)", () => {
+  test("false for a child of someone else's session (different marker or none)", () => {
     expect(isOwnChild(session("C2", {}, session("R2", { [MARKER_KEY]: "m2" })), "m1")).toBe(false);
     expect(isOwnChild(session("C3", {}, session("R3", {})), "m1")).toBe(false);
   });
@@ -35,7 +35,7 @@ describe("waitFor", () => {
     };
   }
 
-  test("zwraca pierwszą wartość spełniającą warunek i woła dispose", async () => {
+  test("returns the first value that satisfies the condition and calls dispose", async () => {
     const e = emitter<number>();
     const p = waitFor(e.subscribe, (v) => v > 1, 1000);
     e.emit(1);
@@ -45,7 +45,7 @@ describe("waitFor", () => {
     expect(e.dispose).toHaveBeenCalled();
   });
 
-  test("odrzuca po limicie czasu i woła dispose", async () => {
+  test("rejects after the timeout and calls dispose", async () => {
     vi.useFakeTimers();
     const e = emitter<number>();
     const p = waitFor(e.subscribe, () => true, 1000);
@@ -58,11 +58,11 @@ describe("waitFor", () => {
 describe("withTimeout", () => {
   afterEach(() => vi.useRealTimers());
 
-  test("przepuszcza wynik, który zdążył", async () => {
+  test("passes through a result that arrived in time", async () => {
     expect(await withTimeout(Promise.resolve(7), 1000)).toBe(7);
   });
 
-  test("odrzuca TimeoutError, gdy obietnica wisi", async () => {
+  test("rejects with TimeoutError when the promise hangs", async () => {
     vi.useFakeTimers();
     const p = withTimeout(new Promise(() => {}), 1000);
     vi.advanceTimersByTime(1000);
@@ -71,7 +71,7 @@ describe("withTimeout", () => {
 });
 
 describe("attachConfig", () => {
-  test("attach do editor-browser ze znacznikiem i urlFilter '*' (jedna karta bez okna wyboru)", () => {
+  test("attach to editor-browser with marker and urlFilter '*' (single tab without the picker)", () => {
     expect(attachConfig("m1")).toEqual({
       type: "editor-browser",
       request: "attach",

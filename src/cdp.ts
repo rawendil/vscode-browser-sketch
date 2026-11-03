@@ -22,13 +22,13 @@ interface Pending {
   reject(err: Error): void;
 }
 
-/** Minimalny klient Chrome DevTools Protocol na jednym WebSockecie (tryb flatten). */
+/** Minimal Chrome DevTools Protocol client over a single WebSocket (flatten mode). */
 export class CdpClient {
   private nextId = 1;
   private pending = new Map<number, Pending>();
   private closed = false;
 
-  /** `requestTimeoutMs`: ukryta karta potrafi nie oddać klatki i zrzut wisiałby bez końca. */
+  /** `requestTimeoutMs`: a hidden tab may never return a frame, and the screenshot would hang forever. */
   constructor(
     private socket: SocketLike,
     private requestTimeoutMs = 10000,

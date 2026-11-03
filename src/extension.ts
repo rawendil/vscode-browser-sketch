@@ -8,7 +8,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const capturesDir = vscode.Uri.joinPath(context.globalStorageUri, "captures");
   context.subscriptions.push(log);
 
-  // Resztki z poprzednich uruchomień (starsze niż doba).
+  // Leftovers from previous runs (older than a day).
   await cleanCaptures(capturesDir.fsPath, 24 * 60 * 60 * 1000).catch((err) => log.appendLine(`Cleanup: ${err}`));
 
   let busy = false;

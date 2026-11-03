@@ -2,8 +2,8 @@ import { readdir, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
- * Usuwa zrzuty starsze niż `maxAgeMs`. Katalog jest wspólny dla wszystkich okien,
- * więc świeżych nie ruszamy — inne okno może je mieć otwarte. Brak katalogu to nie błąd.
+ * Removes screenshots older than `maxAgeMs`. The directory is shared by all windows,
+ * so we leave fresh ones alone — another window may have them open. A missing directory is not an error.
  */
 export async function cleanCaptures(dir: string, maxAgeMs: number, now = new Date()): Promise<void> {
   let names: string[];

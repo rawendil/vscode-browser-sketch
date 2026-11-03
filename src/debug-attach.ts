@@ -8,13 +8,13 @@ export interface AttachedBrowser {
   stop(): Promise<void>;
 }
 
-/** Jak długo po przekroczeniu limitu zatrzymujemy własną sesję, która wystartuje spóźniona. */
+/** How long after the timeout we keep stopping our own session if it starts late. */
 const LATE_SESSION_MS = 5 * 60 * 1000;
 
 /**
- * Uruchamia własną sesję `editor-browser` w trybie attach (podpięcie pod istniejącą kartę)
- * i czeka na jej sesję potomną strony. Cudzych sesji nie dotyka.
- * VS Code może pokazać wybór karty (także przy jednej), więc limit obejmuje czas wyboru.
+ * Starts our own `editor-browser` session in attach mode (attaching to an existing tab)
+ * and waits for its page child session. Never touches other sessions.
+ * VS Code may show the tab picker (even for a single tab), so the timeout covers the picking time.
  */
 export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowser> {
   const marker = randomUUID();
@@ -31,11 +31,11 @@ export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowse
     (s) => isOwnChild(s, marker),
     timeoutMs,
   );
-  // Gdy startDebugging zawiedzie, nikt już nie czeka na tę obietnicę.
+  // If startDebugging fails, nobody is waiting on this promise anymore.
   childPromise.catch(() => {});
 
   try {
-    // Bez `noDebug`: z nim vscode-js-debug nie uruchamia sesji attach wcale (VS Code 1.144).
+    // Without `noDebug`: with it vscode-js-debug does not start the attach session at all (VS Code 1.144).
     const started = vscode.debug.startDebugging(
       undefined,
       attachConfig(marker),
@@ -45,8 +45,8 @@ export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowse
         suppressDebugStatusbar: true,
       },
     );
-    // startDebugging potrafi długo nie wracać, choć sesje już działają — rozstrzyga sesja potomna.
-    // Zamknięty wybór karty: startDebugging zwraca false albo nasza sesja główna kończy się bez potomnej.
+    // startDebugging may take long to return even though the sessions are already running — the child session decides.
+    // Tab picker closed: startDebugging returns false or our root session ends without a child.
     const rootEnded = waitFor<vscode.DebugSession>(
       (cb) => vscode.debug.onDidTerminateDebugSession(cb),
       (s) => !s.parentSession && isOwnSession(s, marker),
@@ -77,7 +77,7 @@ export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowse
     if (root) {
       await stopRoot().catch(() => {});
     } else {
-      // Wybór karty mógł zostać otwarty — jeśli ktoś wybierze kartę później, nie zostawiamy sesji.
+      // The tab picker may still be open — if someone picks a tab later, we don't leave the session behind.
       waitFor<vscode.DebugSession>(
         (cb) => vscode.debug.onDidStartDebugSession(cb),
         (s) => !s.parentSession && isOwnSession(s, marker),

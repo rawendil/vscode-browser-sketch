@@ -1,4 +1,4 @@
-/** Klucz w konfiguracji debugowania, po którym rozpoznajemy własną sesję główną. */
+/** Key in the debug configuration by which we recognize our own root session. */
 export const MARKER_KEY = "__browserSketchId";
 
 export interface SessionLike {
@@ -9,8 +9,8 @@ export interface SessionLike {
 }
 
 /**
- * Konfiguracja podpięcia pod kartę wbudowanej przeglądarki. js-debug pomija okno wyboru
- * tylko wtedy, gdy `urlFilter` pasuje do dokładnie jednej karty — `*` pasuje do każdej.
+ * Configuration for attaching to a built-in browser tab. js-debug skips the picker
+ * only when `urlFilter` matches exactly one tab — `*` matches any.
  */
 export function attachConfig(marker: string) {
   return {
@@ -30,7 +30,7 @@ export class TimeoutError extends Error {
   }
 }
 
-/** Użytkownik nie wybrał karty (zamknięty wybór albo minął czas) — kończymy po cichu. */
+/** The user did not pick a tab (picker closed or timed out) — we finish silently. */
 export class AttachCancelledError extends Error {
   constructor() {
     super("No browser tab selected");
@@ -42,7 +42,7 @@ export function isOwnSession(session: SessionLike, marker: string): boolean {
   return session.configuration[MARKER_KEY] === marker;
 }
 
-/** Sesja potomna (strona) uruchomiona przez naszą sesję główną — nigdy cudzą. */
+/** Child session (page) started by our root session — never someone else's. */
 export function isOwnChild(session: SessionLike, marker: string): boolean {
   return !!session.parentSession && isOwnSession(session.parentSession, marker);
 }

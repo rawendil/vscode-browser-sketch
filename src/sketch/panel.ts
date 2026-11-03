@@ -2,8 +2,8 @@ import { randomBytes } from "node:crypto";
 import * as vscode from "vscode";
 
 /**
- * Otwiera zrzut w nowej karcie edytora rysunku. Plik zrzutu jest tymczasowy —
- * znika razem z kartą, a zamknięcie nie pyta o zapis.
+ * Opens a screenshot in a new sketch editor tab. The screenshot file is temporary —
+ * it goes away with the tab, and closing does not prompt to save.
  */
 export function openSketch(extensionUri: vscode.Uri, image: vscode.Uri, capturesDir: vscode.Uri): vscode.WebviewPanel {
   const dist = vscode.Uri.joinPath(extensionUri, "dist");

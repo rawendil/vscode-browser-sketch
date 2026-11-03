@@ -12,8 +12,8 @@ interface CdpProxy {
 }
 
 /**
- * Zrzut widocznej części otwartej karty wbudowanej przeglądarki do `storageDir`.
- * Zwraca plik albo `undefined`, gdy zrzutu nie ma.
+ * Screenshot of the visible part of the open built-in browser tab, saved to `storageDir`.
+ * Returns the file, or `undefined` if there is no screenshot.
  */
 export async function captureBrowser(
   storageDir: vscode.Uri,
@@ -56,7 +56,7 @@ export async function captureBrowser(
         "No browser tab is open. Open a page in the Integrated Browser and try again.",
       );
     } else if (err instanceof AttachCancelledError) {
-      // Zamknięty wybór karty — bez okna z błędem.
+      // Tab picker was closed — no error dialog.
       vscode.window.setStatusBarMessage("Browser Sketch: no browser tab selected", 5000);
     } else {
       void vscode.window.showErrorMessage(`Screenshot failed: ${err instanceof Error ? err.message : String(err)}`);

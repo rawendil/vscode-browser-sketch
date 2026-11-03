@@ -14,7 +14,7 @@ const contexts = await Promise.all([
     sourcemap: true,
     logLevel: "info",
   }),
-  // Strona edytora rysunku (webview) — dist/webview.js i dist/webview.css.
+  // Sketch editor page (webview) — dist/webview.js and dist/webview.css.
   esbuild.context({
     entryPoints: { webview: "src/sketch/webview/main.ts" },
     bundle: true,

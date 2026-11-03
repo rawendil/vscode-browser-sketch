@@ -6,7 +6,7 @@ import { describe, expect, test } from "vitest";
 import { captureFileName, cleanCaptures } from "./storage";
 
 describe("cleanCaptures", () => {
-  test("usuwa tylko pliki starsze niż limit (inne okna mogą mieć otwarte świeże zrzuty)", async () => {
+  test("removes only files older than the limit (other windows may have fresh screenshots open)", async () => {
     const dir = join(await mkdtemp(join(tmpdir(), "bs-")), "captures");
     await mkdir(dir);
     const now = new Date("2026-11-03T12:00:00Z");
@@ -19,7 +19,7 @@ describe("cleanCaptures", () => {
     expect(existsSync(join(dir, "swiezy.png"))).toBe(true);
   });
 
-  test("nie rzuca, gdy katalogu nie ma", async () => {
+  test("does not throw when the directory is missing", async () => {
     const dir = join(await mkdtemp(join(tmpdir(), "bs-")), "captures");
     await expect(cleanCaptures(dir, 1000)).resolves.toBeUndefined();
   });

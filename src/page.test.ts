@@ -10,21 +10,21 @@ function fakeCdp(targetInfo: { type: string; url?: string }) {
 }
 
 describe("inspectPage", () => {
-  test("pyta o cel pośrednika bez sessionId i zwraca adres strony", async () => {
+  test("asks for the proxy target without sessionId and returns the page URL", async () => {
     const cdp = fakeCdp({ type: "page", url: "http://localhost:5173/" });
     expect(await inspectPage(cdp)).toEqual({ url: "http://localhost:5173/" });
     expect(cdp.calls).toEqual([["Target.getTargetInfo"]]);
   });
 
-  test("rzuca BlankPageError dla about:blank", async () => {
+  test("throws BlankPageError for about:blank", async () => {
     await expect(inspectPage(fakeCdp({ type: "page", url: "about:blank" }))).rejects.toBeInstanceOf(BlankPageError);
   });
 
-  test("rzuca BlankPageError dla pustego url", async () => {
+  test("throws BlankPageError for an empty url", async () => {
     await expect(inspectPage(fakeCdp({ type: "page", url: "" }))).rejects.toBeInstanceOf(BlankPageError);
   });
 
-  test("rzuca BlankPageError, gdy cel nie jest stroną", async () => {
+  test("throws BlankPageError when the target is not a page", async () => {
     await expect(inspectPage(fakeCdp({ type: "service_worker", url: "http://x/sw.js" }))).rejects.toBeInstanceOf(
       BlankPageError,
     );
@@ -32,7 +32,7 @@ describe("inspectPage", () => {
 });
 
 describe("captureViewport", () => {
-  test("wysyła Page.captureScreenshot {format:'png'} bez sessionId i dekoduje base64", async () => {
+  test("sends Page.captureScreenshot {format:'png'} without sessionId and decodes base64", async () => {
     const send = vi.fn(async () => ({ data: Buffer.from("PNG").toString("base64") }));
     const png = await captureViewport({ send: send as any });
     expect(png.toString()).toBe("PNG");

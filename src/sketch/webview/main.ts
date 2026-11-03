@@ -19,7 +19,7 @@ const COLORS = [
   { color: "#ffffff", label: "White" },
   { color: "#111111", label: "Black" },
 ];
-/** Grubość linii i wielkość tekstu w pikselach ekranu. */
+/** Line width and text size in screen pixels. */
 const WIDTHS = [
   { width: 2, text: 16, label: "Thin" },
   { width: 4, text: 22, label: "Medium" },
@@ -35,7 +35,7 @@ const state = {
   scale: 1,
   draft: undefined as Shape | undefined,
   erasing: false,
-  /** Obszar do skopiowania, w pikselach obrazu. */
+  /** Area to copy, in image pixels. */
   selection: undefined as Rect | undefined,
   selectFrom: undefined as Point | undefined,
 };
@@ -47,7 +47,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
   return node;
 }
 
-// --- Układ -------------------------------------------------------------------
+// --- Layout -------------------------------------------------------------------
 
 const toolbar = el("div", { id: "toolbar" });
 const shot = el("img", { id: "shot", alt: "Browser screenshot", draggable: false });
@@ -112,7 +112,7 @@ function setWidth(width: (typeof WIDTHS)[number]) {
   refreshToolbar();
 }
 
-// --- Dopasowanie obrazu do karty ---------------------------------------------
+// --- Fitting the image to the tab ---------------------------------------------
 
 function layout() {
   if (!shot.naturalWidth) return;
@@ -133,7 +133,7 @@ shot.addEventListener("load", layout);
 new ResizeObserver(layout).observe(stage);
 shot.src = document.body.dataset.image ?? "";
 
-// --- Rysowanie ---------------------------------------------------------------
+// --- Drawing ---------------------------------------------------------------
 
 function contrast(color: string): string {
   const n = parseInt(color.slice(1), 16);
@@ -195,7 +195,7 @@ function render() {
   refreshToolbar();
 }
 
-/** Przyciemnia wszystko poza zaznaczeniem — tylko na ekranie, nie w kopii. */
+/** Dims everything outside the selection — on screen only, not in the copy. */
 function drawSelection() {
   const sel = state.selection;
   if (!sel) return;
@@ -232,7 +232,7 @@ layer.addEventListener("pointerdown", (e) => {
   const width = state.width.width / state.scale;
   switch (state.tool) {
     case "text":
-      // Bez tego domyślna obsługa kliknięcia zabiera fokus nowemu polu tekstu.
+      // Without this, the default click handling steals focus from the new text field.
       e.preventDefault();
       if (textInput) commitText();
       else openTextInput(p, e.offsetX, e.offsetY);
@@ -282,7 +282,7 @@ function endStroke() {
 layer.addEventListener("pointerup", endStroke);
 layer.addEventListener("pointercancel", endStroke);
 
-// --- Tekst -------------------------------------------------------------------
+// --- Text -------------------------------------------------------------------
 
 let textInput: HTMLInputElement | undefined;
 let textAt: Point | undefined;
@@ -334,7 +334,7 @@ function commitText() {
   render();
 }
 
-// --- Kopiowanie do schowka ---------------------------------------------------
+// --- Copying to the clipboard ---------------------------------------------------
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 function showToast(text: string, error = false) {
@@ -344,7 +344,7 @@ function showToast(text: string, error = false) {
   toastTimer = setTimeout(() => (toast.className = ""), error ? 6000 : 1800);
 }
 
-/** Zaznaczony obszar (albo cały obraz) z rysunkiem, w pełnej rozdzielczości zrzutu. */
+/** Selected area (or the whole image) with the drawing, at the screenshot's full resolution. */
 function renderExport(): Promise<Blob> {
   commitText();
   const area = state.selection ?? { x: 0, y: 0, w: shot.naturalWidth, h: shot.naturalHeight };
@@ -363,7 +363,7 @@ function renderExport(): Promise<Blob> {
 async function copyImage() {
   if (!shot.naturalWidth) return;
   try {
-    // Obietnica w ClipboardItem: zapis zaczyna się jeszcze w geście użytkownika.
+    // Promise in ClipboardItem: the write starts while still inside the user gesture.
     await navigator.clipboard.write([new ClipboardItem({ "image/png": renderExport() })]);
     showToast(state.selection ? "Selection copied" : "Image copied");
   } catch (err) {
@@ -371,7 +371,7 @@ async function copyImage() {
   }
 }
 
-// --- Cofanie i skróty --------------------------------------------------------
+// --- Undo and shortcuts --------------------------------------------------------
 
 function undo() {
   if (history.undo()) render();
