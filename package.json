@@ -4,6 +4,9 @@
   "description": "Zrzut karty wbudowanej przeglądarki VS Code z rysowaniem na nim.",
   "version": "0.0.3",
   "publisher": "rawendil",
+  "author": {
+    "name": "Sebastian Soczka"
+  },
   "license": "MIT",
   "engines": {
     "vscode": "^1.117.0"
