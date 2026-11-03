@@ -1,18 +1,24 @@
 {
   "name": "vscode-browser-sketch",
   "displayName": "Browser Sketch",
-  "description": "Zrzut karty wbudowanej przeglądarki VS Code z rysowaniem na nim.",
-  "version": "0.0.3",
+  "description": "Zrzut karty wbudowanej przeglądarki VS Code z rysowaniem i kopiowaniem do schowka.",
+  "version": "0.1.0",
   "publisher": "rawendil",
   "author": {
     "name": "Sebastian Soczka"
   },
   "license": "MIT",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#1B4332",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.117.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Visualization"
   ],
   "main": "./dist/extension.js",
   "activationEvents": [],
@@ -45,5 +51,15 @@
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
-  }
+  },
+  "keywords": [
+    "screenshot",
+    "zrzut",
+    "browser",
+    "integrated browser",
+    "annotate",
+    "markup",
+    "draw",
+    "clipboard"
+  ]
 }

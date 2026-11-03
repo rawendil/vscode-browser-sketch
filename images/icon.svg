@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2D6A4F"/>
+      <stop offset="1" stop-color="#1B4332"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#bg)"/>
+  <!-- okno przeglądarki -->
+  <rect x="40" y="56" width="176" height="140" rx="16" fill="#F1FAF4"/>
+  <path d="M40 72 a16 16 0 0 1 16 -16 h144 a16 16 0 0 1 16 16 v14 h-176 z" fill="#B7E4C7"/>
+  <circle cx="58" cy="71" r="5" fill="#2D6A4F"/>
+  <circle cx="74" cy="71" r="5" fill="#40916C"/>
+  <circle cx="90" cy="71" r="5" fill="#52B788"/>
+  <!-- treść strony -->
+  <rect x="58" y="104" width="64" height="10" rx="5" fill="#B7E4C7"/>
+  <rect x="58" y="124" width="92" height="8" rx="4" fill="#D8F3DC"/>
+  <rect x="58" y="140" width="80" height="8" rx="4" fill="#D8F3DC"/>
+  <rect x="58" y="156" width="56" height="8" rx="4" fill="#D8F3DC"/>
+  <!-- odręczna obwódka -->
+  <path d="M150 112 c22 -14 52 -6 52 18 c0 26 -34 38 -58 26 c-18 -9 -16 -34 6 -44 c10 -4 22 -5 30 -1"
+        fill="none" stroke="#8BD13F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- strzałka -->
+  <path d="M58 217 L109 188.2" stroke="#8BD13F" stroke-width="12" stroke-linecap="round"/>
+  <path d="M134 175 L102 174.9 L116 201.5 Z" fill="#8BD13F" stroke="#8BD13F" stroke-width="6" stroke-linejoin="round"/>
+</svg>
