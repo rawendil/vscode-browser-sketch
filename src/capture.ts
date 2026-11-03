@@ -24,10 +24,10 @@ export async function captureBrowser(
   let browser: AttachedBrowser | undefined;
   let cdp: CdpClient | undefined;
 
-  log.appendLine(`[${new Date().toISOString()}] Zrzut`);
+  log.appendLine(`[${new Date().toISOString()}] Screenshot`);
   try {
     let t = Date.now();
-    const waiting = vscode.window.setStatusBarMessage("$(loading~spin) Browser Sketch: podpinam się do karty przeglądarki…");
+    const waiting = vscode.window.setStatusBarMessage("$(loading~spin) Browser Sketch: attaching to the browser tab…");
     try {
       browser = await attachToBrowser();
     } finally {
@@ -38,33 +38,33 @@ export async function captureBrowser(
     t = Date.now();
     const proxy = (await withTimeout(browser.child.customRequest("requestCDPProxy"), 10000)) as CdpProxy;
     cdp = await CdpClient.connect(`ws://${proxy.host}:${proxy.port}${proxy.path ?? ""}`);
-    step("pośrednik CDP", t);
+    step("CDP proxy", t);
 
     t = Date.now();
     const page = await inspectPage(cdp);
     const png = await captureViewport(cdp);
-    step("zrzut", t);
-    log.appendLine(`  strona: ${page.url}, ${png.length} B`);
+    step("capture", t);
+    log.appendLine(`  page: ${page.url}, ${png.length} B`);
 
     const uri = vscode.Uri.joinPath(storageDir, captureFileName(new Date()));
     await vscode.workspace.fs.writeFile(uri, png);
     return uri;
   } catch (err) {
-    log.appendLine(`  błąd: ${err instanceof Error ? err.stack : String(err)}`);
+    log.appendLine(`  error: ${err instanceof Error ? err.stack : String(err)}`);
     if (err instanceof BlankPageError) {
       void vscode.window.showWarningMessage(
-        "Brak otwartej karty przeglądarki. Otwórz stronę we wbudowanej przeglądarce i spróbuj ponownie.",
+        "No browser tab is open. Open a page in the Integrated Browser and try again.",
       );
     } else if (err instanceof AttachCancelledError) {
       // Zamknięty wybór karty — bez okna z błędem.
-      vscode.window.setStatusBarMessage("Browser Sketch: nie wybrano karty przeglądarki", 5000);
+      vscode.window.setStatusBarMessage("Browser Sketch: no browser tab selected", 5000);
     } else {
-      void vscode.window.showErrorMessage(`Zrzut nie powiódł się: ${err instanceof Error ? err.message : String(err)}`);
+      void vscode.window.showErrorMessage(`Screenshot failed: ${err instanceof Error ? err.message : String(err)}`);
     }
     return undefined;
   } finally {
     cdp?.close();
     await browser?.stop().catch((err) => log.appendLine(`  stop: ${err}`));
-    step("razem", started);
+    step("total", started);
   }
 }

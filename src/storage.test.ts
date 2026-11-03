@@ -26,5 +26,5 @@ describe("cleanCaptures", () => {
 });
 
 test("captureFileName", () => {
-  expect(captureFileName(new Date("2026-11-03T12:05:09.123Z"))).toBe("zrzut-2026-11-03T12-05-09-123Z.png");
+  expect(captureFileName(new Date("2026-11-03T12:05:09.123Z"))).toBe("screenshot-2026-11-03T12-05-09-123Z.png");
 });

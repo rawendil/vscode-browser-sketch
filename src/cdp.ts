@@ -42,7 +42,7 @@ export class CdpClient {
       const ws = new WebSocket(url);
       const timer = setTimeout(() => {
         ws.close();
-        reject(new CdpError(`Brak połączenia z ${url} po ${timeoutMs} ms`));
+        reject(new CdpError(`No connection to ${url} after ${timeoutMs} ms`));
       }, timeoutMs);
       ws.addEventListener("open", () => {
         clearTimeout(timer);
@@ -50,14 +50,14 @@ export class CdpClient {
       });
       ws.addEventListener("error", () => {
         clearTimeout(timer);
-        reject(new CdpError(`Nie udało się połączyć z ${url}`));
+        reject(new CdpError(`Could not connect to ${url}`));
       });
     });
   }
 
   send<T = unknown>(method: string, params?: object, sessionId?: string): Promise<T> {
     if (this.closed) {
-      return Promise.reject(new CdpError(`${method}: połączenie CDP zamknięte`));
+      return Promise.reject(new CdpError(`${method}: CDP connection closed`));
     }
     const id = this.nextId++;
     const frame: Record<string, unknown> = { id, method };
@@ -66,7 +66,7 @@ export class CdpClient {
     return new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new CdpError(`${method}: brak odpowiedzi po ${this.requestTimeoutMs} ms`));
+        reject(new CdpError(`${method}: no response after ${this.requestTimeoutMs} ms`));
       }, this.requestTimeoutMs);
       this.pending.set(id, { method, timer, resolve: resolve as (v: unknown) => void, reject });
       this.socket.send(JSON.stringify(frame));
@@ -97,7 +97,7 @@ export class CdpClient {
     this.closed = true;
     for (const entry of this.pending.values()) {
       clearTimeout(entry.timer);
-      entry.reject(new CdpError(`${entry.method}: połączenie CDP zamknięte`));
+      entry.reject(new CdpError(`${entry.method}: CDP connection closed`));
     }
     this.pending.clear();
   }

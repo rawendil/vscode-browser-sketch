@@ -21,5 +21,5 @@ export async function cleanCaptures(dir: string, maxAgeMs: number, now = new Dat
 }
 
 export function captureFileName(now: Date): string {
-  return `zrzut-${now.toISOString().replace(/[:.]/g, "-")}.png`;
+  return `screenshot-${now.toISOString().replace(/[:.]/g, "-")}.png`;
 }

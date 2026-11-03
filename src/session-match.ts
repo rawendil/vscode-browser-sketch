@@ -25,7 +25,7 @@ export function attachConfig(marker: string) {
 
 export class TimeoutError extends Error {
   constructor(ms: number) {
-    super(`Przekroczono limit czasu (${ms} ms)`);
+    super(`Timed out after ${ms} ms`);
     this.name = "TimeoutError";
   }
 }
@@ -33,7 +33,7 @@ export class TimeoutError extends Error {
 /** Użytkownik nie wybrał karty (zamknięty wybór albo minął czas) — kończymy po cichu. */
 export class AttachCancelledError extends Error {
   constructor() {
-    super("Nie wybrano karty przeglądarki");
+    super("No browser tab selected");
     this.name = "AttachCancelledError";
   }
 }

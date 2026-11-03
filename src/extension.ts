@@ -9,7 +9,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(log);
 
   // Resztki z poprzednich uruchomień (starsze niż doba).
-  await cleanCaptures(capturesDir.fsPath, 24 * 60 * 60 * 1000).catch((err) => log.appendLine(`Sprzątanie: ${err}`));
+  await cleanCaptures(capturesDir.fsPath, 24 * 60 * 60 * 1000).catch((err) => log.appendLine(`Cleanup: ${err}`));
 
   let busy = false;
   context.subscriptions.push(
@@ -27,7 +27,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
   status.text = "$(device-camera)";
-  status.tooltip = "Zrzut przeglądarki";
+  status.tooltip = "Screenshot Browser";
   status.command = "browserSketch.capture";
   status.show();
   context.subscriptions.push(status);

@@ -4,26 +4,26 @@ import { fitScale, History, isDegenerate, normalizeSelection, topmostHit, type P
 type Tool = "select" | "pen" | "arrow" | "rect" | "text" | "eraser";
 
 const TOOLS: { tool: Tool; icon: string; label: string; key: string }[] = [
-  { tool: "select", icon: "⬚", label: "Zaznacz obszar do skopiowania", key: "s" },
-  { tool: "pen", icon: "✎", label: "Pisak", key: "p" },
-  { tool: "arrow", icon: "↗", label: "Strzałka", key: "a" },
-  { tool: "rect", icon: "▭", label: "Prostokąt", key: "r" },
-  { tool: "text", icon: "T", label: "Tekst", key: "t" },
-  { tool: "eraser", icon: "⌫", label: "Gumka", key: "e" },
+  { tool: "select", icon: "⬚", label: "Select area to copy", key: "s" },
+  { tool: "pen", icon: "✎", label: "Pen", key: "p" },
+  { tool: "arrow", icon: "↗", label: "Arrow", key: "a" },
+  { tool: "rect", icon: "▭", label: "Rectangle", key: "r" },
+  { tool: "text", icon: "T", label: "Text", key: "t" },
+  { tool: "eraser", icon: "⌫", label: "Eraser", key: "e" },
 ];
 const COLORS = [
-  { color: "#e5212b", label: "Czerwony" },
-  { color: "#ffd400", label: "Żółty" },
-  { color: "#22c55e", label: "Zielony" },
-  { color: "#2f80ed", label: "Niebieski" },
-  { color: "#ffffff", label: "Biały" },
-  { color: "#111111", label: "Czarny" },
+  { color: "#e5212b", label: "Red" },
+  { color: "#ffd400", label: "Yellow" },
+  { color: "#22c55e", label: "Green" },
+  { color: "#2f80ed", label: "Blue" },
+  { color: "#ffffff", label: "White" },
+  { color: "#111111", label: "Black" },
 ];
 /** Grubość linii i wielkość tekstu w pikselach ekranu. */
 const WIDTHS = [
-  { width: 2, text: 16, label: "Cienka" },
-  { width: 4, text: 22, label: "Średnia" },
-  { width: 8, text: 32, label: "Gruba" },
+  { width: 2, text: 16, label: "Thin" },
+  { width: 4, text: 22, label: "Medium" },
+  { width: 8, text: 32, label: "Thick" },
 ];
 const ERASER_REACH = 6;
 const FONT = "sans-serif";
@@ -50,7 +50,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
 // --- Układ -------------------------------------------------------------------
 
 const toolbar = el("div", { id: "toolbar" });
-const shot = el("img", { id: "shot", alt: "Zrzut przeglądarki", draggable: false });
+const shot = el("img", { id: "shot", alt: "Browser screenshot", draggable: false });
 const layer = el("canvas", { id: "layer" });
 const frame = el("div", { id: "frame" }, shot, layer);
 const stage = el("div", { id: "stage" }, frame);
@@ -75,14 +75,14 @@ const widthButtons = WIDTHS.map((w) => {
   dot.style.width = dot.style.height = `${w.width + 2}px`;
   return el("button", { title: w.label, onclick: () => setWidth(w) }, dot);
 });
-const undoButton = el("button", { title: "Cofnij (Ctrl+Z)", textContent: "↶", onclick: () => undo() });
-const redoButton = el("button", { title: "Ponów (Ctrl+Shift+Z)", textContent: "↷", onclick: () => redo() });
+const undoButton = el("button", { title: "Undo (Ctrl+Z)", textContent: "↶", onclick: () => undo() });
+const redoButton = el("button", { title: "Redo (Ctrl+Shift+Z)", textContent: "↷", onclick: () => redo() });
 group(...toolButtons);
 group(...colorButtons);
 group(...widthButtons);
 const copyButton = el("button", {
-  title: "Kopiuj do schowka (Ctrl+C) — zaznaczony obszar albo całość",
-  textContent: "⧉ Kopiuj",
+  title: "Copy to clipboard (Ctrl+C) — selection or whole image",
+  textContent: "⧉ Copy",
   onclick: () => copyImage(),
 });
 group(undoButton, redoButton);
@@ -356,7 +356,7 @@ function renderExport(): Promise<Blob> {
   g.drawImage(shot, 0, 0);
   history.shapes.forEach((s) => draw(g, s));
   return new Promise((resolve, reject) =>
-    out.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Nie udało się utworzyć obrazu"))), "image/png"),
+    out.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Could not create the image"))), "image/png"),
   );
 }
 
@@ -365,9 +365,9 @@ async function copyImage() {
   try {
     // Obietnica w ClipboardItem: zapis zaczyna się jeszcze w geście użytkownika.
     await navigator.clipboard.write([new ClipboardItem({ "image/png": renderExport() })]);
-    showToast(state.selection ? "Skopiowano zaznaczenie" : "Skopiowano cały obraz");
+    showToast(state.selection ? "Selection copied" : "Image copied");
   } catch (err) {
-    showToast(`Nie udało się skopiować: ${err instanceof Error ? err.message : String(err)}`, true);
+    showToast(`Copy failed: ${err instanceof Error ? err.message : String(err)}`, true);
   }
 }
 

@@ -1,9 +1,9 @@
-# Zmiany
+# Changelog
 
 ## 0.1.0
 
-Pierwsze wydanie.
+Initial release.
 
-- Zrzut widocznej części karty wbudowanej przeglądarki VS Code, bez przeładowania strony (także z planszą WebGL).
-- Edytor rysunku: pisak, strzałka, prostokąt, tekst, gumka, kolory, grubości, cofanie i ponawianie.
-- Zaznaczenie obszaru i kopiowanie do schowka razem z rysunkiem.
+- Screenshot of the visible part of an Integrated Browser tab, without reloading the page (WebGL canvases included).
+- Sketch editor: pen, arrow, rectangle, text, eraser, colors, stroke widths, undo and redo.
+- Select an area and copy it to the clipboard together with the drawing.

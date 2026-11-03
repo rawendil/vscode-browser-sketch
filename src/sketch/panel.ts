@@ -9,7 +9,7 @@ export function openSketch(extensionUri: vscode.Uri, image: vscode.Uri, captures
   const dist = vscode.Uri.joinPath(extensionUri, "dist");
   const panel = vscode.window.createWebviewPanel(
     "browserSketch.sketch",
-    `Szkic ${new Date().toLocaleTimeString()}`,
+    `Sketch ${new Date().toLocaleTimeString()}`,
     vscode.ViewColumn.Active,
     { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [capturesDir, dist] },
   );
@@ -18,7 +18,7 @@ export function openSketch(extensionUri: vscode.Uri, image: vscode.Uri, captures
   const asset = (name: string) => webview.asWebviewUri(vscode.Uri.joinPath(dist, name));
 
   webview.html = `<!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">

@@ -4,7 +4,7 @@ type Cdp = Pick<CdpClient, "send">;
 
 export class BlankPageError extends Error {
   constructor() {
-    super("Brak otwartej strony w przeglądarce");
+    super("No page open in the browser");
     this.name = "BlankPageError";
   }
 }

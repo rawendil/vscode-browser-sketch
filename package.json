@@ -1,7 +1,7 @@
 {
   "name": "vscode-browser-sketch",
   "displayName": "Browser Sketch",
-  "description": "Zrzut karty wbudowanej przeglądarki VS Code z rysowaniem i kopiowaniem do schowka.",
+  "description": "Screenshot the VS Code Integrated Browser, annotate it and copy it to the clipboard.",
   "version": "0.1.0",
   "publisher": "rawendil",
   "author": {
@@ -26,7 +26,7 @@
     "commands": [
       {
         "command": "browserSketch.capture",
-        "title": "Zrzut przeglądarki",
+        "title": "Screenshot Browser",
         "category": "Browser Sketch",
         "icon": "$(device-camera)"
       }
@@ -54,7 +54,6 @@
   },
   "keywords": [
     "screenshot",
-    "zrzut",
     "browser",
     "integrated browser",
     "annotate",

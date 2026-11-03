@@ -1,50 +1,50 @@
 # Browser Sketch
 
-Zrzut karty **wbudowanej przeglądarki VS Code** jednym skrótem, z rysowaniem na nim i kopiowaniem do schowka. Do pokazania agentowi albo koledze, co poprawić na stronie — bez Flameshota, bez Copilota, bez wychodzenia z edytora.
+Screenshot the **VS Code Integrated Browser** with one shortcut, draw on it and copy it to the clipboard. Show an AI agent or a teammate what to fix on a page, without leaving the editor.
 
-## Jak używać
+## Usage
 
-1. Otwórz stronę we wbudowanej przeglądarce VS Code.
-2. Naciśnij **`Ctrl+Alt+S`** (lub kliknij ikonę aparatu na pasku stanu, lub wybierz z palety „Browser Sketch: Zrzut przeglądarki”).
-3. Zrzut otwiera się w nowej karcie „Szkic” — zaznacz, co trzeba.
-4. **`Ctrl+C`** kopiuje obraz z rysunkiem do schowka. Wklej go do czatu, zgłoszenia albo komunikatora.
+1. Open a page in the VS Code Integrated Browser.
+2. Press **`Ctrl+Alt+S`** (or click the camera icon in the status bar, or run "Browser Sketch: Screenshot Browser" from the Command Palette).
+3. The screenshot opens in a new "Sketch" tab — mark what needs fixing.
+4. **`Ctrl+C`** copies the image with your drawing to the clipboard. Paste it into a chat, an issue or a messenger.
 
-Zrzut obejmuje to, co widać na karcie, w jej bieżącym stanie — strona nie jest przeładowywana, więc zalogowanie, otwarte okna czy przewinięcie zostają na swoim miejscu. Płótna WebGL i canvas są na zrzucie.
+The screenshot shows what is visible in the tab, in its current state. The page is not reloaded, so logins, open dialogs and scroll position stay as they are. WebGL and canvas content is captured.
 
-## Narzędzia
+## Tools
 
-| Narzędzie | Klawisz | Działanie |
+| Tool | Key | What it does |
 | --- | --- | --- |
-| Zaznacz | `S` | Przeciągnij obszar do skopiowania. `Esc` usuwa zaznaczenie. |
-| Pisak | `P` | Rysowanie odręczne. |
-| Strzałka | `A` | Domyślne narzędzie. |
-| Prostokąt | `R` | Ramka wokół elementu. |
-| Tekst | `T` | Kliknij, wpisz, zatwierdź `Enter`. |
-| Gumka | `E` | Kliknij lub przeciągnij po obiekcie — znika cały. |
+| Select | `S` | Drag an area to copy. `Esc` clears the selection. |
+| Pen | `P` | Freehand drawing. |
+| Arrow | `A` | Default tool. |
+| Rectangle | `R` | Frame around an element. |
+| Text | `T` | Click, type, confirm with `Enter`. |
+| Eraser | `E` | Click or drag over an object — it is removed as a whole. |
 
-- Sześć kolorów (domyślnie czerwony) i trzy grubości na pasku narzędzi.
-- **`Ctrl+Z`** cofa, **`Ctrl+Shift+Z`** ponawia.
-- **`Ctrl+C`** lub **`Enter`** kopiuje zaznaczony obszar; bez zaznaczenia — cały obraz. Kopia ma pełną rozdzielczość zrzutu.
+- Six colors (red by default) and three stroke widths in the toolbar.
+- **`Ctrl+Z`** undoes, **`Ctrl+Shift+Z`** redoes.
+- **`Ctrl+C`** or **`Enter`** copies the selected area; without a selection, the whole image. The copy keeps the full screenshot resolution.
 
-Na macOS zamiast `Ctrl` używaj `Cmd`; skrót zrzutu to `Ctrl+Alt+S`.
+On macOS use `Cmd` instead of `Ctrl` in the Sketch tab; the screenshot shortcut is `Ctrl+Alt+S`.
 
-## Wymagania
+## Requirements
 
-- VS Code **1.117** lub nowszy z wbudowaną przeglądarką (Integrated Browser).
-- Wbudowany debuger JavaScript (`ms-vscode.js-debug`) — jest w VS Code domyślnie.
+- VS Code **1.117** or later with the Integrated Browser.
+- The built-in JavaScript Debugger (`ms-vscode.js-debug`), shipped with VS Code.
 
-## Jak to działa
+## How it works
 
-VS Code nie daje rozszerzeniom wglądu w kartę przeglądarki inaczej niż przez debugowanie. Browser Sketch na czas zrzutu (ok. 2 s) podpina się pod otwartą kartę ukrytą sesją debugowania, wykonuje zrzut przez Chrome DevTools Protocol i od razu się odłącza. Karta zostaje otwarta, a cudze sesje debugowania nie są ruszane.
+VS Code gives extensions access to a browser tab only through debugging. For the duration of a screenshot (about 2 seconds) Browser Sketch attaches to the open tab with a hidden debug session, captures it via the Chrome DevTools Protocol and detaches right away. The tab stays open, and other debug sessions are left alone.
 
-Zrzuty leżą w prywatnym katalogu rozszerzenia i znikają po zamknięciu karty „Szkic”. Nic nie jest wysyłane poza komputer.
+Screenshots are stored in the extension's private storage and are deleted when the Sketch tab is closed. Nothing leaves your machine.
 
-## Ograniczenia
+## Limitations
 
-- Przy kilku otwartych kartach przeglądarki VS Code zapyta, którą zrzucić.
-- Zrzut obejmuje widoczną część strony, nie całą przewijaną stronę.
-- Stan chwilowy strony (najechanie myszą, rozwinięta lista) może zniknąć, bo wywołanie polecenia zabiera fokus z karty.
+- With several browser tabs open, VS Code asks which one to capture.
+- Only the visible part of the page is captured, not the whole scrollable page.
+- Transient page state (hover, an open dropdown) may be lost, because running the command takes focus away from the tab.
 
-## Licencja
+## License
 
 MIT © Sebastian Soczka
