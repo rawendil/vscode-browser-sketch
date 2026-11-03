@@ -15,6 +15,10 @@ Screenshot the **VS Code Integrated Browser** with one shortcut, draw on it and 
 
 The screenshot shows what is visible in the tab, in its current state. The page is not reloaded, so logins, open dialogs and scroll position stay as they are. WebGL and canvas content is captured.
 
+### Drawing on an existing image
+
+Right-click a PNG, JPG, WebP, GIF, BMP or SVG file in the Explorer and choose **Open Image in Sketch**. When an image is open in VS Code's image preview and no browser tab is visible, **`Ctrl+Alt+S`** (or the pencil button in the preview's title bar) opens that image instead of taking a browser screenshot, and "Browser Sketch: Open Image in Sketch" in the Command Palette asks for a file. The sketch works on a copy — the original file is never changed. An SVG is turned into a bitmap first (at least 2048 px on the longer side), so the copied result is a PNG.
+
 ## Tools
 
 | Tool | Key | What it does |

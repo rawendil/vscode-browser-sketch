@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { captureFileName, cleanCaptures } from "./storage";
+import { captureFileName, cleanCaptures, importFileName } from "./storage";
 
 describe("cleanCaptures", () => {
   test("removes only files older than the limit (other windows may have fresh screenshots open)", async () => {
@@ -27,4 +27,18 @@ describe("cleanCaptures", () => {
 
 test("captureFileName", () => {
   expect(captureFileName(new Date("2026-11-03T12:05:09.123Z"))).toBe("screenshot-2026-11-03T12-05-09-123Z.png");
+});
+
+describe("importFileName", () => {
+  test("keeps the image extension, lowercased", () => {
+    expect(importFileName(new Date("2026-11-03T12:05:09.123Z"), "/home/u/Pictures/Shot.JPG")).toBe(
+      "image-2026-11-03T12-05-09-123Z.jpg",
+    );
+  });
+
+  test("falls back to .png when the file has no extension", () => {
+    expect(importFileName(new Date("2026-11-03T12:05:09.123Z"), "/home/u/shot")).toBe(
+      "image-2026-11-03T12-05-09-123Z.png",
+    );
+  });
 });

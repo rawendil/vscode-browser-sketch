@@ -2,7 +2,7 @@
   "name": "vscode-browser-sketch",
   "displayName": "Browser Sketch",
   "description": "Screenshot the VS Code Integrated Browser, annotate it and copy it to the clipboard.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "rawendil",
   "author": {
     "name": "Sebastian Soczka"
@@ -35,6 +35,12 @@
         "title": "Screenshot Browser",
         "category": "Browser Sketch",
         "icon": "$(device-camera)"
+      },
+      {
+        "command": "browserSketch.openImage",
+        "title": "Open Image in Sketch",
+        "category": "Browser Sketch",
+        "icon": "$(edit)"
       }
     ],
     "keybindings": [
@@ -43,7 +49,23 @@
         "key": "ctrl+alt+s",
         "mac": "ctrl+alt+s"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "browserSketch.openImage",
+          "when": "resourceExtname =~ /^\\.(png|jpe?g|webp|gif|bmp|svg)$/i",
+          "group": "navigation@90"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "browserSketch.openImage",
+          "when": "resourceExtname =~ /^\\.(png|jpe?g|webp|gif|bmp|svg)$/i",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run build",

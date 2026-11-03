@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Open an existing image in a sketch: from the Explorer context menu, the Command Palette, or with `Ctrl+Alt+S` / the status bar camera while an image is open in VS Code's image preview. The sketch works on a copy; the original file is never changed.
+- Supported: PNG, JPG, WebP, GIF, BMP and SVG (rendered to a bitmap, at least 2048 px on the longer side).
+
 ## 0.1.2
 
 - README: screenshots of the Sketch tab and the command.

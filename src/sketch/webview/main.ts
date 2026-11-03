@@ -131,7 +131,30 @@ function layout() {
 
 shot.addEventListener("load", layout);
 new ResizeObserver(layout).observe(stage);
-shot.src = document.body.dataset.image ?? "";
+void loadImage(document.body.dataset.image ?? "", document.body.dataset.raster);
+
+/** A bitmap loads as is; an SVG (`raster` = "WxH") is first rendered to a bitmap of that size. */
+async function loadImage(src: string, raster: string | undefined) {
+  if (!raster) {
+    shot.src = src;
+    return;
+  }
+  const [w, h] = raster.split("x").map(Number);
+  const svg = new Image();
+  svg.src = src;
+  try {
+    await svg.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext("2d")!.drawImage(svg, 0, 0, w, h);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) throw new Error("empty bitmap");
+    shot.src = URL.createObjectURL(blob);
+  } catch (err) {
+    showToast(`Could not render the SVG: ${err instanceof Error ? err.message : String(err)}`, true);
+  }
+}
 
 // --- Drawing ---------------------------------------------------------------
 

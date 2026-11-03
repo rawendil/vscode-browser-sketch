@@ -1,5 +1,5 @@
 import { readdir, rm, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { extname, join } from "node:path";
 
 /**
  * Removes screenshots older than `maxAgeMs`. The directory is shared by all windows,
@@ -22,4 +22,9 @@ export async function cleanCaptures(dir: string, maxAgeMs: number, now = new Dat
 
 export function captureFileName(now: Date): string {
   return `screenshot-${now.toISOString().replace(/[:.]/g, "-")}.png`;
+}
+
+/** Name for a copy of an image opened from disk; the original stays untouched. */
+export function importFileName(now: Date, source: string): string {
+  return `image-${now.toISOString().replace(/[:.]/g, "-")}${extname(source).toLowerCase() || ".png"}`;
 }
