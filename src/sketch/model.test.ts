@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { fitScale, hitTest, History, isDegenerate, topmostHit, type Shape } from "./model";
+import { fitScale, hitTest, History, isDegenerate, normalizeSelection, topmostHit, type Shape } from "./model";
 
 const red = "#e5212b";
 const arrow = (x1: number, y1: number, x2: number, y2: number): Shape => ({
@@ -111,5 +111,25 @@ describe("fitScale", () => {
   test("większy obraz dopasowany do ciaśniejszego wymiaru", () => {
     expect(fitScale({ w: 2000, h: 1000 }, { w: 1000, h: 1000 }, 1)).toBe(0.5);
     expect(fitScale({ w: 1000, h: 2000 }, { w: 1000, h: 500 }, 1)).toBe(0.25);
+  });
+});
+
+describe("normalizeSelection", () => {
+  const img = { w: 1000, h: 500 };
+
+  test("porządkuje rogi niezależnie od kierunku przeciągania i zaokrągla do pikseli", () => {
+    expect(normalizeSelection({ x: 300.6, y: 200.2 }, { x: 100.2, y: 50.7 }, img)).toEqual({ x: 100, y: 50, w: 201, h: 151 });
+  });
+
+  test("przycina do krawędzi obrazu", () => {
+    expect(normalizeSelection({ x: -50, y: -20 }, { x: 1200, y: 100 }, img)).toEqual({ x: 0, y: 0, w: 1000, h: 100 });
+  });
+
+  test("zbyt małe zaznaczenie (klik) to brak zaznaczenia", () => {
+    expect(normalizeSelection({ x: 10, y: 10 }, { x: 11, y: 40 }, img)).toBeUndefined();
+  });
+
+  test("zaznaczenie całkiem poza obrazem to brak zaznaczenia", () => {
+    expect(normalizeSelection({ x: 1100, y: 10 }, { x: 1200, y: 40 }, img)).toBeUndefined();
   });
 });

@@ -1,9 +1,10 @@
 import "./style.css";
-import { fitScale, History, isDegenerate, topmostHit, type Point, type Shape } from "../model";
+import { fitScale, History, isDegenerate, normalizeSelection, topmostHit, type Point, type Rect, type Shape } from "../model";
 
-type Tool = "pen" | "arrow" | "rect" | "text" | "eraser";
+type Tool = "select" | "pen" | "arrow" | "rect" | "text" | "eraser";
 
 const TOOLS: { tool: Tool; icon: string; label: string; key: string }[] = [
+  { tool: "select", icon: "⬚", label: "Zaznacz obszar do skopiowania", key: "s" },
   { tool: "pen", icon: "✎", label: "Pisak", key: "p" },
   { tool: "arrow", icon: "↗", label: "Strzałka", key: "a" },
   { tool: "rect", icon: "▭", label: "Prostokąt", key: "r" },
@@ -34,6 +35,9 @@ const state = {
   scale: 1,
   draft: undefined as Shape | undefined,
   erasing: false,
+  /** Obszar do skopiowania, w pikselach obrazu. */
+  selection: undefined as Rect | undefined,
+  selectFrom: undefined as Point | undefined,
 };
 const history = new History();
 
@@ -50,7 +54,8 @@ const shot = el("img", { id: "shot", alt: "Zrzut przeglądarki", draggable: fals
 const layer = el("canvas", { id: "layer" });
 const frame = el("div", { id: "frame" }, shot, layer);
 const stage = el("div", { id: "stage" }, frame);
-document.body.prepend(toolbar, stage);
+const toast = el("div", { id: "toast" });
+document.body.prepend(toolbar, stage, toast);
 const ctx = layer.getContext("2d")!;
 
 function group(...buttons: HTMLButtonElement[]) {
@@ -75,7 +80,13 @@ const redoButton = el("button", { title: "Ponów (Ctrl+Shift+Z)", textContent: "
 group(...toolButtons);
 group(...colorButtons);
 group(...widthButtons);
+const copyButton = el("button", {
+  title: "Kopiuj do schowka (Ctrl+C) — zaznaczony obszar albo całość",
+  textContent: "⧉ Kopiuj",
+  onclick: () => copyImage(),
+});
 group(undoButton, redoButton);
+group(copyButton);
 
 function refreshToolbar() {
   toolButtons.forEach((b, i) => b.classList.toggle("active", TOOLS[i].tool === state.tool));
@@ -130,45 +141,45 @@ function contrast(color: string): string {
   return lum > 140 ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.85)";
 }
 
-function draw(s: Shape) {
-  ctx.strokeStyle = ctx.fillStyle = s.color;
-  ctx.lineCap = ctx.lineJoin = "round";
+function draw(g: CanvasRenderingContext2D, s: Shape) {
+  g.strokeStyle = g.fillStyle = s.color;
+  g.lineCap = g.lineJoin = "round";
   switch (s.kind) {
     case "pen":
-      ctx.lineWidth = s.width;
-      ctx.beginPath();
-      s.points.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-      ctx.stroke();
+      g.lineWidth = s.width;
+      g.beginPath();
+      s.points.forEach((p, i) => (i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y)));
+      g.stroke();
       break;
     case "rect":
-      ctx.lineWidth = s.width;
-      ctx.strokeRect(s.from.x, s.from.y, s.to.x - s.from.x, s.to.y - s.from.y);
+      g.lineWidth = s.width;
+      g.strokeRect(s.from.x, s.from.y, s.to.x - s.from.x, s.to.y - s.from.y);
       break;
     case "arrow": {
       const angle = Math.atan2(s.to.y - s.from.y, s.to.x - s.from.x);
       const len = Math.hypot(s.to.x - s.from.x, s.to.y - s.from.y);
       const head = Math.min(Math.max(12 / state.scale, s.width * 4), len * 0.6);
       const base = { x: s.to.x - head * 0.8 * Math.cos(angle), y: s.to.y - head * 0.8 * Math.sin(angle) };
-      ctx.lineWidth = s.width;
-      ctx.beginPath();
-      ctx.moveTo(s.from.x, s.from.y);
-      ctx.lineTo(base.x, base.y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(s.to.x, s.to.y);
-      ctx.lineTo(s.to.x - head * Math.cos(angle - 0.45), s.to.y - head * Math.sin(angle - 0.45));
-      ctx.lineTo(s.to.x - head * Math.cos(angle + 0.45), s.to.y - head * Math.sin(angle + 0.45));
-      ctx.closePath();
-      ctx.fill();
+      g.lineWidth = s.width;
+      g.beginPath();
+      g.moveTo(s.from.x, s.from.y);
+      g.lineTo(base.x, base.y);
+      g.stroke();
+      g.beginPath();
+      g.moveTo(s.to.x, s.to.y);
+      g.lineTo(s.to.x - head * Math.cos(angle - 0.45), s.to.y - head * Math.sin(angle - 0.45));
+      g.lineTo(s.to.x - head * Math.cos(angle + 0.45), s.to.y - head * Math.sin(angle + 0.45));
+      g.closePath();
+      g.fill();
       break;
     }
     case "text":
-      ctx.font = `${s.size}px ${FONT}`;
-      ctx.textBaseline = "top";
-      ctx.lineWidth = s.size / 6;
-      ctx.strokeStyle = contrast(s.color);
-      ctx.strokeText(s.text, s.at.x, s.at.y);
-      ctx.fillText(s.text, s.at.x, s.at.y);
+      g.font = `${s.size}px ${FONT}`;
+      g.textBaseline = "top";
+      g.lineWidth = s.size / 6;
+      g.strokeStyle = contrast(s.color);
+      g.strokeText(s.text, s.at.x, s.at.y);
+      g.fillText(s.text, s.at.x, s.at.y);
       break;
   }
 }
@@ -178,9 +189,29 @@ function render() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, layer.width, layer.height);
   ctx.setTransform(k, 0, 0, k, 0, 0);
-  history.shapes.forEach(draw);
-  if (state.draft) draw(state.draft);
+  history.shapes.forEach((s) => draw(ctx, s));
+  if (state.draft) draw(ctx, state.draft);
+  drawSelection();
   refreshToolbar();
+}
+
+/** Przyciemnia wszystko poza zaznaczeniem — tylko na ekranie, nie w kopii. */
+function drawSelection() {
+  const sel = state.selection;
+  if (!sel) return;
+  const w = shot.naturalWidth;
+  const h = shot.naturalHeight;
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.beginPath();
+  ctx.rect(0, 0, w, h);
+  ctx.rect(sel.x, sel.y, sel.w, sel.h);
+  ctx.fill("evenodd");
+  ctx.lineWidth = 1 / state.scale;
+  ctx.setLineDash([6 / state.scale, 4 / state.scale]);
+  ctx.strokeStyle = "#ffffff";
+  ctx.strokeRect(sel.x, sel.y, sel.w, sel.h);
+  ctx.restore();
 }
 
 function toImage(e: PointerEvent): Point {
@@ -206,6 +237,11 @@ layer.addEventListener("pointerdown", (e) => {
       if (textInput) commitText();
       else openTextInput(p, e.offsetX, e.offsetY);
       return;
+    case "select":
+      state.selectFrom = p;
+      state.selection = undefined;
+      render();
+      break;
     case "eraser":
       state.erasing = true;
       eraseAt(p);
@@ -224,6 +260,10 @@ layer.addEventListener("pointerdown", (e) => {
 layer.addEventListener("pointermove", (e) => {
   const p = toImage(e);
   if (state.erasing) return eraseAt(p);
+  if (state.selectFrom) {
+    state.selection = normalizeSelection(state.selectFrom, p, { w: shot.naturalWidth, h: shot.naturalHeight });
+    return render();
+  }
   const d = state.draft;
   if (!d) return;
   if (d.kind === "pen") d.points.push(p);
@@ -233,6 +273,7 @@ layer.addEventListener("pointermove", (e) => {
 
 function endStroke() {
   state.erasing = false;
+  state.selectFrom = undefined;
   const d = state.draft;
   state.draft = undefined;
   if (d && !isDegenerate(d)) history.add(d);
@@ -293,6 +334,43 @@ function commitText() {
   render();
 }
 
+// --- Kopiowanie do schowka ---------------------------------------------------
+
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
+function showToast(text: string, error = false) {
+  toast.textContent = text;
+  toast.className = error ? "visible error" : "visible";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (toast.className = ""), error ? 6000 : 1800);
+}
+
+/** Zaznaczony obszar (albo cały obraz) z rysunkiem, w pełnej rozdzielczości zrzutu. */
+function renderExport(): Promise<Blob> {
+  commitText();
+  const area = state.selection ?? { x: 0, y: 0, w: shot.naturalWidth, h: shot.naturalHeight };
+  const out = document.createElement("canvas");
+  out.width = area.w;
+  out.height = area.h;
+  const g = out.getContext("2d")!;
+  g.translate(-area.x, -area.y);
+  g.drawImage(shot, 0, 0);
+  history.shapes.forEach((s) => draw(g, s));
+  return new Promise((resolve, reject) =>
+    out.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Nie udało się utworzyć obrazu"))), "image/png"),
+  );
+}
+
+async function copyImage() {
+  if (!shot.naturalWidth) return;
+  try {
+    // Obietnica w ClipboardItem: zapis zaczyna się jeszcze w geście użytkownika.
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": renderExport() })]);
+    showToast(state.selection ? "Skopiowano zaznaczenie" : "Skopiowano cały obraz");
+  } catch (err) {
+    showToast(`Nie udało się skopiować: ${err instanceof Error ? err.message : String(err)}`, true);
+  }
+}
+
 // --- Cofanie i skróty --------------------------------------------------------
 
 function undo() {
@@ -306,7 +384,16 @@ window.addEventListener("keydown", (e) => {
   if (e.target instanceof HTMLInputElement) return;
   const mod = e.ctrlKey || e.metaKey;
   const key = e.key.toLowerCase();
-  if (mod && key === "z") {
+  if (mod && key === "c") {
+    e.preventDefault();
+    void copyImage();
+  } else if (!mod && key === "enter" && state.selection) {
+    e.preventDefault();
+    void copyImage();
+  } else if (key === "escape" && state.selection) {
+    state.selection = undefined;
+    render();
+  } else if (mod && key === "z") {
     e.preventDefault();
     if (e.shiftKey) redo();
     else undo();

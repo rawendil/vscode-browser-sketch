@@ -2,7 +2,7 @@
   "name": "vscode-browser-sketch",
   "displayName": "Browser Sketch",
   "description": "Zrzut karty wbudowanej przeglądarki VS Code z rysowaniem na nim.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "rawendil",
   "license": "MIT",
   "engines": {

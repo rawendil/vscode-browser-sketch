@@ -120,3 +120,18 @@ export function isDegenerate(shape: Shape): boolean {
 export function fitScale(img: { w: number; h: number }, box: { w: number; h: number }, dpr: number): number {
   return Math.min(box.w / img.w, box.h / img.h, 1 / dpr);
 }
+
+export type Rect = { x: number; y: number; w: number; h: number };
+
+/**
+ * Zaznaczenie z dwóch rogów (w dowolnej kolejności), przycięte do obrazu i rozszerzone
+ * do pełnych pikseli. Klik albo obszar poza obrazem to brak zaznaczenia.
+ */
+export function normalizeSelection(a: Point, b: Point, img: { w: number; h: number }): Rect | undefined {
+  const x0 = Math.max(0, Math.floor(Math.min(a.x, b.x)));
+  const y0 = Math.max(0, Math.floor(Math.min(a.y, b.y)));
+  const x1 = Math.min(img.w, Math.ceil(Math.max(a.x, b.x)));
+  const y1 = Math.min(img.h, Math.ceil(Math.max(a.y, b.y)));
+  if (x1 - x0 < 3 || y1 - y0 < 3) return undefined;
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
