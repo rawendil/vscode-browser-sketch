@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { CdpClient, CdpError, type SocketLike } from "./cdp";
 
 class FakeSocket implements SocketLike {
@@ -88,5 +88,17 @@ describe("CdpClient", () => {
     socket.reply({ method: "Page.loadEventFired", params: {} });
     socket.reply({ id: 1, result: {} });
     expect(await p).toEqual({});
+  });
+
+  describe("limit czasu", () => {
+    afterEach(() => vi.useRealTimers());
+
+    test("żądanie bez odpowiedzi jest odrzucane po limicie czasu", async () => {
+      vi.useFakeTimers();
+      const cdp = new CdpClient(new FakeSocket(), 1000);
+      const p = cdp.send("Page.captureScreenshot");
+      vi.advanceTimersByTime(1000);
+      await expect(p).rejects.toBeInstanceOf(CdpError);
+    });
   });
 });

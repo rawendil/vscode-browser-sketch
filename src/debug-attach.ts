@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import * as vscode from "vscode";
-import { isOwnChild, isOwnSession, MARKER_KEY, waitFor } from "./session-match";
+import { AttachCancelledError, isOwnChild, isOwnSession, MARKER_KEY, TimeoutError, waitFor } from "./session-match";
 
 export interface AttachedBrowser {
   child: vscode.DebugSession;
@@ -52,13 +52,25 @@ export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowse
       },
     );
     // startDebugging potrafi długo nie wracać, choć sesje już działają — rozstrzyga sesja potomna.
+    // Zamknięty wybór karty: startDebugging zwraca false albo nasza sesja główna kończy się bez potomnej.
+    const rootEnded = waitFor<vscode.DebugSession>(
+      (cb) => vscode.debug.onDidTerminateDebugSession(cb),
+      (s) => !s.parentSession && isOwnSession(s, marker),
+      timeoutMs,
+    ).then(() => {
+      throw new AttachCancelledError();
+    });
+    rootEnded.catch(() => {});
     const child = await Promise.race([
       childPromise,
+      rootEnded,
       Promise.resolve(started).then((ok) => {
-        if (!ok) throw new Error("Nie udało się podpiąć do przeglądarki");
+        if (!ok) throw new AttachCancelledError();
         return childPromise;
       }),
-    ]);
+    ]).catch((err) => {
+      throw err instanceof TimeoutError ? new AttachCancelledError() : err;
+    });
     root ??= child.parentSession;
     return {
       child,
@@ -69,7 +81,7 @@ export async function attachToBrowser(timeoutMs = 60000): Promise<AttachedBrowse
     };
   } catch (err) {
     if (root) {
-      await stopRoot();
+      await stopRoot().catch(() => {});
     } else {
       // Wybór karty mógł zostać otwarty — jeśli ktoś wybierze kartę później, nie zostawiamy sesji.
       waitFor<vscode.DebugSession>(

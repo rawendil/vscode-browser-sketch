@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { CdpClient } from "./cdp";
 import { attachToBrowser, type AttachedBrowser } from "./debug-attach";
 import { BlankPageError, captureViewport, inspectPage } from "./page";
-import { TimeoutError } from "./session-match";
+import { AttachCancelledError, withTimeout } from "./session-match";
 import { captureFileName } from "./storage";
 
 interface CdpProxy {
@@ -36,7 +36,7 @@ export async function captureBrowser(
     step("attach", t);
 
     t = Date.now();
-    const proxy = (await browser.child.customRequest("requestCDPProxy")) as CdpProxy;
+    const proxy = (await withTimeout(browser.child.customRequest("requestCDPProxy"), 10000)) as CdpProxy;
     cdp = await CdpClient.connect(`ws://${proxy.host}:${proxy.port}${proxy.path ?? ""}`);
     step("pośrednik CDP", t);
 
@@ -56,8 +56,8 @@ export async function captureBrowser(
       void vscode.window.showWarningMessage(
         "Brak otwartej karty przeglądarki. Otwórz stronę we wbudowanej przeglądarce i spróbuj ponownie.",
       );
-    } else if (err instanceof TimeoutError) {
-      // Najczęściej: zamknięty wybór karty — bez okna z błędem.
+    } else if (err instanceof AttachCancelledError) {
+      // Zamknięty wybór karty — bez okna z błędem.
       vscode.window.setStatusBarMessage("Browser Sketch: nie wybrano karty przeglądarki", 5000);
     } else {
       void vscode.window.showErrorMessage(`Zrzut nie powiódł się: ${err instanceof Error ? err.message : String(err)}`);

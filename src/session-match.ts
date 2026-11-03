@@ -15,6 +15,14 @@ export class TimeoutError extends Error {
   }
 }
 
+/** Użytkownik nie wybrał karty (zamknięty wybór albo minął czas) — kończymy po cichu. */
+export class AttachCancelledError extends Error {
+  constructor() {
+    super("Nie wybrano karty przeglądarki");
+    this.name = "AttachCancelledError";
+  }
+}
+
 export function isOwnSession(session: SessionLike, marker: string): boolean {
   return session.configuration[MARKER_KEY] === marker;
 }
@@ -40,5 +48,21 @@ export function waitFor<T>(
       subscription.dispose();
       reject(new TimeoutError(timeoutMs));
     }, timeoutMs);
+  });
+}
+
+export function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new TimeoutError(timeoutMs)), timeoutMs);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
   });
 }

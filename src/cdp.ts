@@ -17,6 +17,7 @@ export class CdpError extends Error {
 
 interface Pending {
   method: string;
+  timer: ReturnType<typeof setTimeout>;
   resolve(value: unknown): void;
   reject(err: Error): void;
 }
@@ -27,7 +28,11 @@ export class CdpClient {
   private pending = new Map<number, Pending>();
   private closed = false;
 
-  constructor(private socket: SocketLike) {
+  /** `requestTimeoutMs`: ukryta karta potrafi nie oddać klatki i zrzut wisiałby bez końca. */
+  constructor(
+    private socket: SocketLike,
+    private requestTimeoutMs = 10000,
+  ) {
     socket.addEventListener("message", (e) => this.onMessage(e.data));
     socket.addEventListener("close", () => this.onClose());
   }
@@ -59,7 +64,11 @@ export class CdpClient {
     if (params) frame.params = params;
     if (sessionId) frame.sessionId = sessionId;
     return new Promise<T>((resolve, reject) => {
-      this.pending.set(id, { method, resolve: resolve as (v: unknown) => void, reject });
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new CdpError(`${method}: brak odpowiedzi po ${this.requestTimeoutMs} ms`));
+      }, this.requestTimeoutMs);
+      this.pending.set(id, { method, timer, resolve: resolve as (v: unknown) => void, reject });
       this.socket.send(JSON.stringify(frame));
     });
   }
@@ -76,6 +85,7 @@ export class CdpClient {
     const entry = this.pending.get(message.id);
     if (!entry) return;
     this.pending.delete(message.id);
+    clearTimeout(entry.timer);
     if (message.error) {
       entry.reject(new CdpError(`${entry.method}: ${message.error.message}`, message.error.code));
     } else {
@@ -86,6 +96,7 @@ export class CdpClient {
   private onClose(): void {
     this.closed = true;
     for (const entry of this.pending.values()) {
+      clearTimeout(entry.timer);
       entry.reject(new CdpError(`${entry.method}: połączenie CDP zamknięte`));
     }
     this.pending.clear();

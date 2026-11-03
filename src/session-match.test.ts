@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { isOwnChild, MARKER_KEY, waitFor, type SessionLike } from "./session-match";
+import { isOwnChild, MARKER_KEY, TimeoutError, waitFor, withTimeout, type SessionLike } from "./session-match";
 
 function session(id: string, configuration: Record<string, unknown>, parentSession?: SessionLike): SessionLike {
   return { id, type: "editor-browser", configuration, parentSession };
@@ -52,5 +52,20 @@ describe("waitFor", () => {
     vi.advanceTimersByTime(1000);
     await expect(p).rejects.toThrow();
     expect(e.dispose).toHaveBeenCalled();
+  });
+});
+
+describe("withTimeout", () => {
+  afterEach(() => vi.useRealTimers());
+
+  test("przepuszcza wynik, który zdążył", async () => {
+    expect(await withTimeout(Promise.resolve(7), 1000)).toBe(7);
+  });
+
+  test("odrzuca TimeoutError, gdy obietnica wisi", async () => {
+    vi.useFakeTimers();
+    const p = withTimeout(new Promise(() => {}), 1000);
+    vi.advanceTimersByTime(1000);
+    await expect(p).rejects.toBeInstanceOf(TimeoutError);
   });
 });
