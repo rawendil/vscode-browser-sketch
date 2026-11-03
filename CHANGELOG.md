@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- README: screenshots of the Sketch tab and the command.
+
 ## 0.1.1
 
 - The status bar camera icon now shows right after VS Code starts, not only after the first screenshot.
