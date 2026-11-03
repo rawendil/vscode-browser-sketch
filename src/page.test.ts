@@ -4,7 +4,7 @@ import { BlankPageError, captureViewport, inspectPage } from "./page";
 function fakeCdp(targetInfo: { type: string; url?: string }) {
   const send = vi.fn(async (method: string): Promise<any> => {
     if (method === "Target.getTargetInfo") return { targetInfo: { targetId: "P1", ...targetInfo } };
-    throw new Error(`nieoczekiwane ${method}`);
+    throw new Error(`unexpected ${method}`);
   });
   return { send: send as any, calls: send.mock.calls };
 }
