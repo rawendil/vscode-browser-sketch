@@ -1,0 +1,10 @@
+.vscode/**
+.superpowers/**
+docs/**
+src/**
+node_modules/**
+**/*.map
+**/*.test.ts
+esbuild.mjs
+tsconfig.json
+vitest.config.ts

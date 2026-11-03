@@ -1,0 +1,46 @@
+{
+  "name": "vscode-browser-sketch",
+  "displayName": "Browser Sketch",
+  "description": "Zrzut karty wbudowanej przeglądarki VS Code z rysowaniem na nim.",
+  "version": "0.0.1",
+  "publisher": "rawendil",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.117.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "browserSketch.capture",
+        "title": "Zrzut przeglądarki",
+        "category": "Browser Sketch",
+        "icon": "$(device-camera)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "browserSketch.capture",
+        "key": "ctrl+alt+s",
+        "mac": "cmd+alt+s"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/vscode": "^1.116.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
